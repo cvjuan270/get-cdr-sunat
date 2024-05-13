@@ -1,6 +1,7 @@
 # Module Name: my_module.py
 
 import os
+import configparser
 import base64
 import zipfile
 import io
@@ -10,6 +11,9 @@ from zeep import Client, Settings
 from zeep.transports import Transport
 from lxml import etree
 
+# Cargar las variables de entorno
+config = configparser.ConfigParser()
+config.read('.env')
 
 _DATOS = {'ruc' : '20558326256','user' : 'RICARDO1', 'password' : 'Balti19','doc_type':'01'}
 
@@ -58,7 +62,7 @@ def get_sunat_credentials():
         res.update({
             'wsdl': 'https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService?wsdl',
             # 'wsdl': _get_sunat_wsdl_test(),
-            'token': UsernameToken(_DATOS['ruc']+_DATOS['user'], _DATOS['password']),
+            'token': UsernameToken(config['SUNAT']['RUC']+config['SUNAT']['USER'], config['SUNAT']['PASSWORD']),
         })
         return res
 
@@ -73,7 +77,7 @@ def get_status_cdr_sunat_service(serie, number):
             transport=transport,
             settings=settings,
             )
-        result = client.service.getStatusCdr(_DATOS['ruc'], _DATOS['doc_type'], serie, number)
+        result = client.service.getStatusCdr(config['SUNAT']['RUC'], config['SUNAT']['DOC_TYPE'], serie, number)
         result.raise_for_status()
     except (ReqConnectionError, HTTPError, InvalidSchema, InvalidURL, ReadTimeout) as e:
         print(e)
@@ -96,8 +100,7 @@ def get_status_cdr_sunat_service(serie, number):
             f.write(cdr)
     return {'cdr': cdr, 'status': status, 'code': code}
 
-if __name__ == "__main__":
-    # solicitar serie y numero de comprobante
+def main():
     serie = input("Ingrese serie : ")
     serie = serie.strip()
     lst_nums = input("Ingrese numeros separados por comas [,] : ")
@@ -105,5 +108,9 @@ if __name__ == "__main__":
     for num in lst_nums:
         response = get_status_cdr_sunat_service(serie, num)
         if response:
-            print(response['status'], response['code'])
-        print(response)
+            print(serie+'-'+num, response['code'], response['status'])
+    
+
+if __name__ == "__main__":
+
+    main()

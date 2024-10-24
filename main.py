@@ -15,7 +15,7 @@ from lxml import etree
 config = configparser.ConfigParser()
 config.read('.env')
 
-_DATOS = {'ruc' : '20558326256','user' : 'RICARDO1', 'password' : 'Balti19','doc_type':'01'}
+_DATOS = {'ruc' : '20558326123','user' : 'RICARDO123', 'password' : '123456789','doc_type':'01'}
 
 def _unzip_edi_document(z_str):
         buffer = io.BytesIO(z_str)
